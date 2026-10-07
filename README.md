@@ -21,13 +21,52 @@ The manufacturer has a business requirements are the find which features can lea
 
 ### Hypotheses:
 
-**Hypothesis 1 ($H_1$)**: Internal Degradation & Resistance (Degradation Category) Long-term physical wear metrics—specifically capacity_fade_pct, internal_resistance_mohm, total_energy_throughput_kwh, and cycle_count—will be the strongest predictors of the long-term degradation_category."Why: As batteries age, continuous chemical oxidation increases internal resistance and reduces total holding capacity. These are steady, cumulative metrics.
+**Hypothesis 1 ($H_1$)**: Internal Degradation & Resistance: (Degradation Category) Long-term physical wear metrics—specifically capacity_fade_pct, internal_resistance_mohm, total_energy_throughput_kwh, and cycle_count—will be the strongest predictors of the long-term degradation_category."Why: As batteries age, continuous chemical oxidation increases internal resistance and reduces total holding capacity. These are steady, cumulative metrics.
 
-**Hypothesis 2 ($H_2$)**: Stress Factors & Thermal Anomaly Spikes (Failure Risk Label) Operational stress spikes—specifically peak_temp_during_fast_charge_c, fast_charge_ratio, and high avg_ambient_temp_c—will be the primary drivers for predicting sudden failure_risk_label (e.g., Critical risk)."Why: A battery might have low overall wear (Normal degradation), but frequent fast charging in hot climates causes extreme thermal stress, leading to immediate high failure risk (like short circuits or cell swelling).
+**Hypothesis 2 ($H_2$)**: Stress Factors & Thermal Anomaly Spikes: (Failure Risk Label) Operational stress spikes—specifically peak_temp_during_fast_charge_c, fast_charge_ratio, and high avg_ambient_temp_c—will be the primary drivers for predicting sudden failure_risk_label (e.g., Critical risk)."Why: A battery might have low overall wear (Normal degradation), but frequent fast charging in hot climates causes extreme thermal stress, leading to immediate high failure risk (like short circuits or cell swelling).
 
-**Hypothesis 3 ($H_3$)**: Environmental & Usage Acceleration"Harsh operating conditions (high avg_depth_of_discharge_pct, high altitude_m, and extreme climate_zone temperatures) will accelerate the transition speed from Normal to Accelerated degradation."Why: Deep discharging and extreme temperatures degrade the internal battery chemistry faster than gentle usage cycles.
+**Hypothesis 3 ($H_3$)**: Environmental & Usage Acceleration: Harsh operating conditions (high avg_depth_of_discharge_pct, high altitude_m, and extreme climate_zone temperatures) will accelerate the transition speed from Normal to Accelerated degradation."Why: Deep discharging and extreme temperatures degrade the internal battery chemistry faster than gentle usage cycles.
 
-**Null Hypothesis ($H_0$)**: Irrelevant or Redundant Administrative Features: Static metadata and administrative features—specifically bms_firmware_version, service_count, vehicle_model, manufacturer, and date timestamps—will have no direct physical impact on battery failure or degradation."Why: While firmware or manufacturing batches can sometimes correlate with defects, raw administrative labels like vehicle_model or last_service_date do not directly cause electrochemical failure but some of the vehicle model may degrade the same type of battery more than others.
+**Null Hypothesis ($H_0$)**: Irrelevant or Redundant Administrative Features: Static metadata and administrative features—specifically bms_firmware_version, service_count, vehicle_model, manufacturer, and date timestamps—will have no direct physical impact on battery failure or degradation."Why: While firmware or manufacturing batches can sometimes correlate with defects, raw administrative labels like vehicle_model or last_service_date do not directly cause electrochemical failure but some of the vehicle model may degr
+
+## User Stories
+
+The CEO of a Battery maker, Vehicle Safety Officer, and a car owner. What are the operational needs and expected outcomes?
+
+I expect the dataset to tell us the consideration the effect of usage of EV cars in terms of the health of a battery in certain conditon..
+
+#### What the CEO cares about:
+
+- Warranty costs
+- Fleet reliability
+- Brand reputation
+- Predictable maintenance
+- Long‑term battery performance across models and manufacturers
+  The data set might offer this from better estimated of remaining cycles with Climate zone, temperature, humidity in certain areas as factors for marketing or research and development into battery manufacturering.
+
+#### What the Safety Officer cares about:
+
+- Preventing thermal events
+- Identifying dangerous degradation patterns
+- Monitoring high‑risk charging behaviour
+- Detecting abnormal ageing before it becomes hazardous
+  The data set might offer help in issuing acurate safety advice and guidlines to car buyer or car makers.
+
+#### A car owner cares about:
+
+- How long the battery will last
+- How far they can drive and how often
+- Whether their charging habits are harming the battery
+- Whether their car is safe
+- Which car to buy if they are considering EV cars or need to replace it
+- Whether they should expect expensive repairs
+- Detecting changes to the battery that are dinamially changing the battery reliability
+- Risky patterns that could be reducing battery life
+
+We don't of course aim to be able to solve all these aim but with research aim to predict the target general State of Health feature given the data available.
+The dataset can train a model that provides health feedback from live BMS telemetry.
+However, the model is limited to the measurements the BMS can collect continuously.
+Some deeper diagnostic readings are only available during service events, meaning the model can update long‑term predictions only when those single, periodic observations are taken.
 
 ## Deployment Reminders
 
