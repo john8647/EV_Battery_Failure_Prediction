@@ -68,6 +68,33 @@ The dataset can train a model that provides health feedback from live BMS teleme
 However, the model is limited to the measurements the BMS can collect continuously.
 Some deeper diagnostic readings are only available during service events, meaning the model can update long‑term predictions only when those single, periodic observations are taken.
 
+## Data set overview
+
+We have 50,000 one row per battery observation that simulates realistic longitudinal health telemetry for EV battery packs across their service life. It covers the aging behavior for four common chemistries.
+The battery dataset contains **35 columns** across 2,600 unique batteries (`battery_id`), each with ~10–40 longitudinal observations (`observation_id`) captured over its service life.
+
+## EDA (Exploratory Data Analysis)
+
+Exploring the data I can see that our dataset currently combines static battery metadata with time-series sensor telemetry in a single flat table. This structure causes data redundancy and missing values in static attributes across repeat readings. To fix this, we will normalize the dataset into two relational entities: a Batteries table for static properties (e.g., chemistry, capacity) and a BatteryReadings table for dynamic sensor observations, linked by a unique battery_id
+
+BatteryTable: Contains 2,600 unique batteries keyed by battery_id across the 7 battery profile attributes (chemistry, manufacturer, vehicle_model, pack_capacity_kwh, manufacture_date, and climate_zone).
+ReadingTable: Contains 50,000 unique telemetry observations keyed by observation_id across the 29 reading metrics and features (while retaining battery_id as a reference key so you can join them back when needed)
+
+We now could be concerned that the unique telemetry observation keyed have some missing values which we could get back by averaging change over time. I have completed the grouped interpolation for cycle_count where it was simple to fill in missing values.
+But we found missing values in other telemetry reading, to use "Regression Averages" fail for Health Readings because by filling missing health readings with global regression averages can be dangerous.Mean Imputation Blinds Your Anomaly Detection: If a battery experiences a dangerous temperature spike to $85^\circ\text{C}$ (peak_temp_during_fast_charge_c), but the next reading is NaN, filling it with the dataset average (say $35^\circ\text{C}$) hides the exact danger from the model for that reading. Smoothing Distorts Health Metrics: Health readings like internal_resistance_mohm or voltage_avg_v are volatile and non-monotonic. Unlike cycle_count, they fluctuate based on ambient temperature, current load, and immediate usage.
+
+## Implementation
+
+Data Ingestion & Overview. Download the dataset from Kaggle.2. Load it using pd.read_csv(). Inspect raw data shapes, column types, and check for missing values (df.info(), df.isnull().sum()).
+Data Cleaning & Preprocessing, Clean column names, handle missing data. Use Box Plot to see outlyers visualise the data in case there are more errors.
+Use Seaborn library with better plots to see trends.
+Exploratory Data Analysis (EDA) & Heatmaps.
+Plot correlation heatmaps (both overall and filtered to mainstream makes) using seaborn.heatmap().Validate feature relationships (enginesize, horsepower, carwidth).
+Machine Learning Modeling & Validation
+Build the Linear Regression baseline with scikit-learn using top non-redundant features.Evaluate test performance using Root Mean Squared Error (RMSE)
+Extract feature coefficients to test your two core hypotheses.
+Final Insights & Business ConclusionsTranslate technical coefficients into actionable recommendations for the CEO, Production Manager, and Marketing Manager and Data Analyst presentation.
+
 ## Deployment Reminders
 
 - The `.python-version`, `.slugignore`, `Procfile` and `setup.sh` files are necessary only if you are deploying a Streamlit app to Heroku as part of your submission for units 2 and 3.
