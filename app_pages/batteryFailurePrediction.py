@@ -1,6 +1,29 @@
 import streamlit as st
 import pandas as pd
 import joblib
+import pathlib
+import requests
+import joblib
+
+
+MODEL_PATH = pathlib.Path("rf_model.pkl")
+MODEL_URL = "https://huggingface.co/CodeInstitute/herokuapp_rf_model/resolve/main/rf_model.pkl"
+
+
+@st.cache_resource
+def load_model():
+    # Download once if missing
+    if not MODEL_PATH.exists():
+        print("Downloading model from Hugging Face...")
+        with requests.get(MODEL_URL, stream=True) as r:
+            r.raise_for_status()
+            with open(MODEL_PATH, "wb") as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+
+    # Load the model
+    return joblib.load(MODEL_PATH)
 
 
 def classify_soh_status(predicted_soh: float) -> tuple[str, str]:
@@ -59,12 +82,6 @@ def calculate_rul_heuristic(
 
     remaining_cycles = remaining_soh_margin / wear_rate
     return int(max(0, remaining_cycles))
-
-
-# Load trained model once
-@st.cache_resource
-def load_model():
-    return joblib.load("rf_model.pkl")
 
 
 model = load_model()
