@@ -163,10 +163,27 @@ Hypothesis: By tuning max_features and increasing n_estimators on our core 4 mai
 We can use a Grid Search tuning across 24 model combinations.
 The GridSearchCV to pick the hyperparameter combination that minimizes absolute prediction error during cross-validation folds. It automatically retrieves the pipeline pre-loaded with the winning parameters so we don't have to rebuild it manually.
 
-Job Uses all available processor cores on my computer to run cross-validation in parallel, speeding up execution is possible if I switch to Google Colab for faster GPU Access.
+Problem: Job Uses all available processor cores on my computer to run cross-validation in parallel, speeding up execution is possible if I switch to Google Colab for faster GPU Access.
 
 ## Ethical consideration
 
+Safety Risks & False Negatives (Critical Failure Risk) The Risk: If your model predicts an $82\%$ $\text{SoH}$ ("Healthy") when an internal short circuit or cell degradation is actually occurring, the driver or fleet manager may skip necessary maintenance.
+⚠️ Model Intended Use & Ethical Disclosure
+
+Educational & Advisory Purpose:
+This interactive Machine Learning dashboard is designed strictly for analytical, operational estimation, and educational research purposes. Model outputs do not replace certified physical battery diagnostics or manufacturer-approved Battery Management System (BMS) inspections.
+
 ## Reference and citations
 
+I have use the LMS for Machine Learning structure of code in 'Training notebook' and resused much of the ETL cleaning performed in unit 1.
+I have used Google Gemini mostly to be focused on refining the EV battery health Streamlit application, and resolving Git repository issues, and optimizing your Random Forest model.
+
 ## Conclusion.
+
+Building an EV battery health prediction system requires bridging physical electrochemistry, clean data engineering, and machine learning models.
+
+Across our development iterations, we built a production-ready machine learning workspace centered on a core schema: Internal Resistance, Cycle Count, Total Energy Throughput, Battery Age, and Chemistry.
+
+## Code not fixed.
+
+The Grid Search tuning optimisation.
