@@ -83,29 +83,54 @@ ReadingTable: Contains 50,000 unique telemetry observations keyed by observation
 We now could be concerned that the unique telemetry observation keyed have some missing values which we could get back by averaging change over time. I have completed the grouped interpolation for cycle_count where it was simple to fill in missing values.
 But we found missing values in other telemetry reading, to use "Regression Averages" fail for Health Readings because by filling missing health readings with global regression averages can be dangerous.Mean Imputation Blinds Your Anomaly Detection: If a battery experiences a dangerous temperature spike to $85^\circ\text{C}$ (peak_temp_during_fast_charge_c), but the next reading is NaN, filling it with the dataset average (say $35^\circ\text{C}$) hides the exact danger from the model for that reading. Smoothing Distorts Health Metrics: Health readings like internal_resistance_mohm or voltage_avg_v are volatile and non-monotonic. Unlike cycle_count, they fluctuate based on ambient temperature, current load, and immediate usage.
 
-## Implementation and ETL stages.
+## Implementation and ETL stages. Step by step of ETL Exploratory_and_Visuals_notebook
 
-Data Ingestion & Overview. Download the dataset from Kaggle.2. Load it using pd.read_csv(). Inspect raw data shapes, column types, and check for missing values (df.info(), df.isnull().sum()).
+1 After EDA we removed null values. I needed to see the columns with missing data. There are many! which could mean lots of work. 2. Because we're looking at observations over time, I concluded that it is best to delete everything that has no progression benefit, that missed three columns I considered essential. 5 rows were removed. 3. Because some row misses an 'easy fix' number of days we can just impute the missing 'days' values in a calculation with observation date. Because I'm planning to split the data set, we need to get this done early. 4. There are missing values which appear in another reading, because we have battery_id we can confidently fil it from that as it’s the same battery. We group by battery_id and complete all the null values for battery essentially chemistry as I predict it will be relevant. 5. Now the battery set is secure we can now split it by identification of features relating to the battery only and the observation reading values recorded. We now can work on Reading Table and BatteryTable to make it easier. 6. Now because there are so many missing records we decided we can fill many of them by understanding what they are if they're moving in a direction. At the point we involved an expert and presented the missing value in a bar chart. See 'Ask an expert'.
 
-Data Cleaning & Preprocessing, Clean column names, handle missing data. Use Box Plot to see outlyers visualise the data in case there are more errors. With 50,000 battery observation we expect some reading to be off, we performed sanity checks to catch data corruption. For example, battery_age_days cannot be negative, and state_of_health_pct cannot exceed $100\%$ or drop below $0\%$ but beyond that we will resort to using statistical profiling, where we can identify points sitting far outside our normal distribution bounds using standard mathematical thresholds. Then if the value is serious we can remove it from the dataset.
+## Expert consultation: Adam Chikodi (Tata) — 8 October 2026
 
-For Visulisations we can use Seaborn library with better plots to see trends.
-Exploratory Data Analysis (EDA) & Heatmaps.
-Plot correlation heatmaps (both overall and filtered to mainstream makes) using seaborn.heatmap().Validate feature relationships (enginesize, horsepower, carwidth).
-Machine Learning Modeling & Validation
-Build the Linear Regression baseline with scikit-learn using top non-redundant features.Evaluate test performance using Root Mean Squared Error (RMSE)
-Extract feature coefficients to test your two core hypotheses.
-Final Insights & Business ConclusionsTranslate technical coefficients into actionable recommendations for the CEO, Production Manager, and Marketing Manager and Data Analyst presentation.
+![WhatsApp chat with battery expert Adam Chikodi from Tata on 8 October 2026](jupyter_notebooks/Chat_Adam_Battery_Expert.png)
+
+**Tip from Adam:** Distinguish direct indicators of a battery's current physical health, such as capacity fade and internal resistance, from behavioral inputs, such as energy throughput and fast-charge ratio, which describe the usage stresses that contributed to wear.
+
+7. Impute battery readings. We gain knowledge from an expert to look at 5 features that they notice change in over time. We will fill missing values in the ReadingTable for those using moving average technique, where the rolling average function fill nulls. We group by battery_id being careful to retain the battery_id field in the dataset. Had to aligned to the rows return it afterwards due to how the group function worked.
+8. We confirm the 5 features are now complete. We examine the data spread, by viewing.
+   total_energy_throughput_kwh has large variance whereas the fast_charge_ratio hardly changes.
+9. We can combine the tables again to view the features.
+10. We visualise all the features and look for extreme colours of red or blue which illustrate positive or negative correlation in a Correlation matrix.
+11. As we know the health of a battery will degrade over time, we create three basic charts to visualise the three target feature we're interested in State of Health and both risk of failure and degradation category.
+    We quickly learn the thresholds from the boxplots. We'll need these later. They are 70% and 80% SoH.
+12. We get the quartile statistics for those Health Boundaries and save them to output for later too.
+13. We now focus in on a measured heatmap to give us score of Correlation matrix.
+    We are looking for positive of negative which relates to SoH. We discover capacity_fade_pct is directly inertly related. Mathematically, Capacity Fade and State of Health ($\text{SoH}$) are exact two-way mirror reflections of each other: we therefore want to exclude it from the training and predict that also if needed.
+14. We can use pandas to compute the correlation specifically with the target variable correlations from strongest to weakest and list them.
+15. We are left with 3 features having dropped 2 looking at the heat map and the fade capacity score. We also have the chemistry which must be an important how a battery works. We predict that batteries of a similar chemical type will cluster together so the heat map matrix should be more defined.
+16. We create Side-by-side subplots illustrate the degradation response across our four primary model features. The visual distributions confirm a clear linear relationship between increased operational wear and declining battery health. This shows that linear regression is a strong indicator to the type of model we will train.
+17. We visualise the other feature we have ignored up until now just to have a reference to them. Almost sure we won't use them as part of the model.
+18. Now we move into the feature selection proof. Silhouette Score evaluates two things simultaneously: Cohesion: How tight and close data points inside the same category are to each other. Separation: How far apart data points in one category are from data points in another category.
+    Our score of $0.514$ is a Good/Reasonable structure. Groups are clearly formed, though some data points near the boundaries overlap slightly.
+19. We can visualise those positive clusters and illustrate groupings
+    Scatter plots group features by their predictive strength. A tightly defined trend—such as internal resistance—provides a clear signal for State of Health predictions, whereas heavily scattered metrics like fast charge ratio introduce operational noise.
+20. The Scatter plots matrix (PairPlot) show Predictive Strength against the Target SoH Category: A feature's predictive strength measures how well it predicts the target variable ($\text{SoH}$). Plotting two input features against each other (e.g., internal_resistance vs. cycle_count) shows their correlation or interaction with one another.
+21. This PairPlot utilizes continuous SoH as a coloured heat gradient across feature pairs. Clusters of low-health colour tones in high-resistance and high-cycle regions demonstrate clear feature-to-target predictive strength.
+22. Two feature these two plots Battery Degradation Analysis by Chemistry Type against Cycle count and Resistance.
+23. Two feature these two plots Battery Degradation Analysis by Chemistry Type against Age and Energy.
+    Chemistry creates distinct branches: A linear model tries to fit a single straight line through all data points. However, because different battery chemistries (LFP, NMC, LMO) degrade at different rates, a single line fails.
+    Tree-based decision rules: A Random Forest breaks the data down into branches based on feature values. It first branches by chemistry, and then applies specific degradation rules for that exact chemistry type.
+24. Using the best feature if we train a mode we need to calculate the 'Mean Absolute Error' an dR² Score
+    We do this by spitting our a train and test set which is used to first train then evaluate performance.
+    Baseline Random Forest Performance ---
+    Mean Absolute Error (MAE): 0.71%
+    R² Score: 0.9792
+25. The helpfulness of feature can be sorted by importances. We notice internal_resistance_mohm is by far the strongest.
+26. Using a mathematics (Sigmoid Curves) to show how Probabilistic Logistic Risk Model driven by our feature internal_resistance_mohm is the single strongest driver of battery degradation, we mapped it directly to the absolute probability of crossing degradation thresholds of 70% and 80%.
+27. We normalized the feature remaining and plotted heatmaps against the chemistry to show how the degradation risk faired.
+28. We plotted the heatmaps against the manufacturer to show how the degradation risk faired.
+29. We plot the distribution of the 4 features used in the training mode. Initially, extreme high values out in the long right tail (e.g., energy throughput $> 300,000\text{ kWh}$ or resistance $> 150\text{ m}\Omega$) look like potential outlier errors. However, we determined that these are not bad sentinels or data corruptions, but legitimate operational extremes representing heavily aged or heavily stressed battery cells.
+30. After normalizing our primary features to a $0\text{--}1$ range, we exported the dataset to the main repository folder for Streamlit integration. Plotting normalized features together on a single line chart highlights relative changes across vastly different scales—providing an intuitive visual for how feature preprocessing affects model performance.
+
+## Interactive Dashoboard and Model
+
+https://batteryhealthprediction-b788ac7e7f6c.herokuapp.com/
 
 ## Deployment Reminders
-
-- The `.python-version`, `.slugignore`, `Procfile` and `setup.sh` files are necessary only if you are deploying a Streamlit app to Heroku as part of your submission for units 2 and 3.
-- Set the `.python-version` Python version to a [Heroku-22](https://devcenter.heroku.com/articles/python-support#supported-runtimes) stack, currently supported version that most closely matches what you used in this project.
-- The project can be deployed to Heroku using the following steps.
-
-1. Log in to Heroku and create an App
-2. At the **Deploy** tab, select **GitHub** as the deployment method.
-3. Select your repository name and click **Search**. Once it is found, click **Connect**.
-4. Select the branch you want to deploy, then click **Deploy Branch**.
-5. The deployment process should happen smoothly if all deployment files are fully functional. Click the button **Open App** at the top of the page to access your App.
-6. If the slug size is too large, then add large files not required for the app to the `.slugignore` file.
