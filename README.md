@@ -85,6 +85,8 @@ But we found missing values in other telemetry reading, to use "Regression Avera
 
 ## Implementation and ETL stages. Step by step of ETL Exploratory_and_Visuals_notebook
 
+https://github.com/john8647/EV_Battery_Failure_Prediction/blob/main/jupyter_notebooks/ETL_Exploratory_and_Visuals_notebook.ipynb
+
 1 After EDA we removed null values. I needed to see the columns with missing data. There are many! which could mean lots of work. 2. Because we're looking at observations over time, I concluded that it is best to delete everything that has no progression benefit, that missed three columns I considered essential. 5 rows were removed. 3. Because some row misses an 'easy fix' number of days we can just impute the missing 'days' values in a calculation with observation date. Because I'm planning to split the data set, we need to get this done early. 4. There are missing values which appear in another reading, because we have battery_id we can confidently fil it from that as it’s the same battery. We group by battery_id and complete all the null values for battery essentially chemistry as I predict it will be relevant. 5. Now the battery set is secure we can now split it by identification of features relating to the battery only and the observation reading values recorded. We now can work on Reading Table and BatteryTable to make it easier. 6. Now because there are so many missing records we decided we can fill many of them by understanding what they are if they're moving in a direction. At the point we involved an expert and presented the missing value in a bar chart. See 'Ask an expert'.
 
 ## Expert consultation: Adam Chikodi (Tata) — 8 October 2026
@@ -131,6 +133,7 @@ But we found missing values in other telemetry reading, to use "Regression Avera
 
 ## Training Notebook
 
+https://github.com/john8647/EV_Battery_Failure_Prediction/blob/main/jupyter_notebooks/Training_notebook.ipynb
 The training notebook follow the same data pipeline process of cleaning as the ETL notebook.
 
 # Initial model creation
