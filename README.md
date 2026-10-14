@@ -1,15 +1,15 @@
 # ![Project banner](resources/banner.png)
 
-# EV Battery Failure Prediction
+# EV Battery Health Prediction
 
 ## Background
 
-The project aims to analyse the electric vehicle battery degradation and risks. With the increased production and sales of EVs (electric vehicles) and the high costs of a battery care is important to monitor degradation mechanisms in the battery and developing a prognostic models to predict its health is very vital. The idea is to be able to always be forecasting what is likely to happen over time, independent of any specific treatment.
+The project aims to analyse the electric vehicle battery degradation and failure risks. With the increased production and sales of EVs (electric vehicles) and the high costs of a battery care is important to monitor degradation mechanisms in the battery and developing a prognostic models to predict its health is very vital. The idea is to be able to always be forecasting what is likely to happen over time, independent of any specific treatment. The primary objective of the project's idea was to be able to predict failure, but as the State of Health (SoH) related to the failures being in a clustered below a threshold we should also aim to be able to get close to the SoH targets with dataset.
 
 ## Data set content.
 
 For this project the data source Kaggle.
-The dataset tells us details about the chemistry, manufacturer, vehicle model and a series of readings gather about the state of the battery including a state of health failure risk and degradation category. We assume the health failure risk and degradation state have been provided by something that understands the factors already. The aim of the project is to bring together those factors to a risk matrix to evaluate what those state might be given the raw data. From this machine learning could be used to train a prognostic models to predict its health and risk factor.
+The dataset tells us details about the chemistry, manufacturer, vehicle model and a series of readings gather about the state of the batteries including a state of health failure and risk and degradation category. We assume the health failure risk and degradation state have been provided by something that understands the factors already. The aim of the project is to bring together those factors to a risk matrix to evaluate what those state might be given the raw data. From this machine learning could be used to train a prognostic models to predict its health and risk factor.
 
 ## Business requirements and goals
 
@@ -31,7 +31,7 @@ The manufacturer has a business requirements are the find which features can lea
 
 ## User Stories
 
-The CEO of a Battery maker, Vehicle Safety Officer, and a car owner. What are the operational needs and expected outcomes?
+A CEO (of a Battery maker firm), a Vehicle Safety Officer, and a EV car owner. What are the operational needs and expected outcomes?
 
 I expect the dataset to tell us the consideration the effect of usage of EV cars in terms of the health of a battery in certain conditon..
 
@@ -42,7 +42,7 @@ I expect the dataset to tell us the consideration the effect of usage of EV cars
 - Brand reputation
 - Predictable maintenance
 - Long‑term battery performance across models and manufacturers
-  The data set might offer this from better estimated of remaining cycles with Climate zone, temperature, humidity in certain areas as factors for marketing or research and development into battery manufacturering.
+  The dataset might offer this from better estimated of remaining cycles with Climate zone, temperature, humidity in certain areas as factors for marketing or research and development into battery manufacturering.
 
 #### What the Safety Officer cares about:
 
@@ -83,11 +83,13 @@ ReadingTable: Contains 50,000 unique telemetry observations keyed by observation
 We now could be concerned that the unique telemetry observation keyed have some missing values which we could get back by averaging change over time. I have completed the grouped interpolation for cycle_count where it was simple to fill in missing values.
 But we found missing values in other telemetry reading, to use "Regression Averages" fail for Health Readings because by filling missing health readings with global regression averages can be dangerous.Mean Imputation Blinds Your Anomaly Detection: If a battery experiences a dangerous temperature spike to $85^\circ\text{C}$ (peak_temp_during_fast_charge_c), but the next reading is NaN, filling it with the dataset average (say $35^\circ\text{C}$) hides the exact danger from the model for that reading. Smoothing Distorts Health Metrics: Health readings like internal_resistance_mohm or voltage_avg_v are volatile and non-monotonic. Unlike cycle_count, they fluctuate based on ambient temperature, current load, and immediate usage.
 
-## Implementation
+## Implementation and ETL stages.
 
 Data Ingestion & Overview. Download the dataset from Kaggle.2. Load it using pd.read_csv(). Inspect raw data shapes, column types, and check for missing values (df.info(), df.isnull().sum()).
-Data Cleaning & Preprocessing, Clean column names, handle missing data. Use Box Plot to see outlyers visualise the data in case there are more errors.
-Use Seaborn library with better plots to see trends.
+
+Data Cleaning & Preprocessing, Clean column names, handle missing data. Use Box Plot to see outlyers visualise the data in case there are more errors. With 50,000 battery observation we expect some reading to be off, we performed sanity checks to catch data corruption. For example, battery_age_days cannot be negative, and state_of_health_pct cannot exceed $100\%$ or drop below $0\%$ but beyond that we will resort to using statistical profiling, where we can identify points sitting far outside our normal distribution bounds using standard mathematical thresholds. Then if the value is serious we can remove it from the dataset.
+
+For Visulisations we can use Seaborn library with better plots to see trends.
 Exploratory Data Analysis (EDA) & Heatmaps.
 Plot correlation heatmaps (both overall and filtered to mainstream makes) using seaborn.heatmap().Validate feature relationships (enginesize, horsepower, carwidth).
 Machine Learning Modeling & Validation

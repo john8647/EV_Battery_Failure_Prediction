@@ -24,5 +24,5 @@ class MultiPage:
         st.title(self.app_name)  # Display the app title
         # Create a sidebar menu
         page = st.sidebar.radio(
-            "Menu", self.pages, format_func=lambda page: page["title"])
+            "Pages", self.pages, format_func=lambda page: page["title"])
         page["function"]()  # Run the selected page's function
