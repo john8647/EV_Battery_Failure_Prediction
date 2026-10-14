@@ -73,7 +73,7 @@ def dashboard_body_visuals():
 
     # 3. Initialize FacetGrid layout
     g = sns.FacetGrid(
-        df_long, col='battery_id', col_wrap=3, height=3.5, aspect=1.3,
+        df_long, col='battery_id', col_wrap=2, height=3.5, aspect=1.3,
         sharex=False
     )
 
