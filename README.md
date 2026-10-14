@@ -129,8 +129,44 @@ But we found missing values in other telemetry reading, to use "Regression Avera
 29. We plot the distribution of the 4 features used in the training mode. Initially, extreme high values out in the long right tail (e.g., energy throughput $> 300,000\text{ kWh}$ or resistance $> 150\text{ m}\Omega$) look like potential outlier errors. However, we determined that these are not bad sentinels or data corruptions, but legitimate operational extremes representing heavily aged or heavily stressed battery cells.
 30. After normalizing our primary features to a $0\text{--}1$ range, we exported the dataset to the main repository folder for Streamlit integration. Plotting normalized features together on a single line chart highlights relative changes across vastly different scales—providing an intuitive visual for how feature preprocessing affects model performance.
 
-## Interactive Dashoboard and Model
+## Training Notebook
+
+The training notebook follow the same data pipeline process of cleaning as the ETL notebook.
+
+# Initial model creation
+
+--- Model Evaluation ---
+R² Score: 0.9830
+Mean Absolute Error (MAE): 0.69%
+pkl file was saved to this directory.
+...\EV_Battery_Failure_Prediction\jupyter_notebooks\streamlit\rf_model.pkl
+
+Problem encountered that it can't be uploaded to GitHub due to size limitations.
+To get around it I uploade it to Hugging face's website instead.
+https://huggingface.co/CodeInstitute/herokuapp_rf_model
+
+# Building the Demo App, Interactive Dashboard
+
+I used the multi-page Streamlit application example in the application we were given in the LMS.
+I added the batteryFailurePrediction python file which add selectboxs for each feature I want in my demo.
+I added the dashboard as a second page which loads Seaborn plots of the normalised and saved in step 30.
 
 https://batteryhealthprediction-b788ac7e7f6c.herokuapp.com/
 
-## Deployment Reminders
+## Improving the model.
+
+With our Tree-based decision rules: A Random Forest breaks the data down into branches based on feature values
+we got a R² Score: 0.9830 and Mean Absolute Error (MAE): 0.69%.
+How to improve it?
+Hypothesis: By tuning max_features and increasing n_estimators on our core 4 main features, we decorrelate individual decision trees within the forest. This is because we are forcing individual trees to split on different feature subsets prevents dominant drivers (like internal resistance) from masking subtle interaction signals in cycle count and age, leading to a lower overall MAE
+
+We can use a Grid Search tuning across 24 model combinations.
+The GridSearchCV to pick the hyperparameter combination that minimizes absolute prediction error during cross-validation folds. It automatically retrieves the pipeline pre-loaded with the winning parameters so we don't have to rebuild it manually.
+
+Job Uses all available processor cores on my computer to run cross-validation in parallel, speeding up execution is possible if I switch to Google Colab for faster GPU Access.
+
+## Ethical consideration
+
+## Reference and citations
+
+## Conclusion.
